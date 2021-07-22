@@ -180,11 +180,6 @@ class Game:
                         time.sleep(5)
 
 
-# pos = Position()
-# pos.play_sequence('332')
-# print(pos)
-# print(pos.negamax()[1])
-
 if __name__ == '__main__':
     g = Game(1, 1)
     g.main()
