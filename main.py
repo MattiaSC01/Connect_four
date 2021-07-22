@@ -172,7 +172,7 @@ class Game:
                     c = math.floor(event.pos[0] / SIDE)
                     self.make_move(c)
 
-                    if self.players == 1:
+                    if self.players == 1 and self.outcome is None:
                         ai_move = self.pos.negamax()[1]
                         self.make_move(ai_move)
 
