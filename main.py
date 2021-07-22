@@ -5,7 +5,7 @@ import math
 import time
 
 
-DEPTH = 9
+DEPTH = 10
 
 SIDE = 100
 RADIUS = 40
@@ -217,8 +217,3 @@ class Game:
 if __name__ == '__main__':
     g = Game(1, 1)
     g.main()
-
-# pos = Position()
-# pos.play_sequence("32323332")
-# print(pos)
-# print(pos.search())
