@@ -5,7 +5,7 @@ import math
 import time
 
 
-DEPTH = 5
+DEPTH = 9
 
 SIDE = 100
 RADIUS = 40
@@ -85,31 +85,65 @@ class Position:
         self.undo(r, c)
         return False
 
-    def negamax(self, d=DEPTH):
-        # base case
+    def static_eval(self):
+        return 0
+
+    # minmax search with alpha-beta pruning
+    def negamax(self, d, alpha, beta):
+
+        # check if the position is winnable with one move
         for i in range(7):
             if self.can_play(i) and self.is_winning(i):
-                return math.floor((41 - self.moves) / 2), i
-        if self.moves == 41:
-            for i in [3, 2, 4, 1, 5, 0, 6]:
-                if self.can_play(i):
-                    return 0, i
+                return math.floor((41 - self.moves) / 2)
 
-        # recursion
-        best = (-21, None)
+        # check if the position is drawn
+        if self.moves == 41:
+            return 0
+
+        # updates the [alpha, beta] window based on the number of moves left, and if it is empty cuts the exploration
+        roof = math.floor((41 - self.moves) / 2)
+        if beta > roof:
+            beta = roof
+        if alpha >= beta:
+            return beta
+
+        # recursive calls
         if d > 0:
             for i in [3, 2, 4, 1, 5, 0, 6]:
                 if self.can_play(i):
                     r = self.play(i)
-                    nxt = self.negamax(d - 1)
-                    if - nxt[0] > best[0]:
-                        best = (- nxt[0], i)
+                    score = - self.negamax(d - 1, - beta, - alpha)
                     self.undo(r, i)
-            return best
+                    if score >= beta:
+                        return score
+                    if score > alpha:
+                        alpha = score
+            return alpha
         else:
-            for i in [3, 2, 4, 1, 5, 0, 6]:
-                if self.can_play(i):
-                    return 0, i
+            return self.static_eval()
+
+    # find the best move in the position
+    def search(self):
+        for c in range(7):
+            if self.can_play(c) and self.is_winning(c):
+                return c
+        if self.moves == 41:
+            for c in range(7):
+                if self.can_play(c):
+                    return c
+
+        scores = [-21] * 7
+        for c in [3, 2, 4, 1, 5, 0, 6]:
+            if self.can_play(c):
+                r = self.play(c)
+                score = - self.negamax(DEPTH, -21, 21)
+                self.undo(r, c)
+                scores[c] = score
+        move = 3
+        for c in [2, 4, 1, 5, 0, 6]:
+            if scores[c] > scores[move]:
+                move = c
+        return move
 
 
 class Game:
@@ -161,7 +195,7 @@ class Game:
         self.draw_board()
 
         if self.ai_begins:
-            ai_move = self.pos.negamax()[1]
+            ai_move = self.pos.search()
             self.make_move(ai_move)
 
         while self.outcome is None:
@@ -173,7 +207,7 @@ class Game:
                     self.make_move(c)
 
                     if self.players == 1 and self.outcome is None:
-                        ai_move = self.pos.negamax()[1]
+                        ai_move = self.pos.search()
                         self.make_move(ai_move)
 
                     if self.outcome is not None:
@@ -183,3 +217,8 @@ class Game:
 if __name__ == '__main__':
     g = Game(1, 1)
     g.main()
+
+# pos = Position()
+# pos.play_sequence("32323332")
+# print(pos)
+# print(pos.search())
